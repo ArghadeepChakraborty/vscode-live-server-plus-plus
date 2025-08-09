@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Heritage of West Bengal</title>
+  <meta name="description" content="Guide to heritage places in West Bengal — locations, entry fees, pictures, transport." />
+  <style>
+    /* --- Basic Reset --- */
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;line-height:1.45;color:#1a1a1a;background:#f7f7fb}
+    a{color:inherit}
+
+    /* --- Layout --- */
+    header{background:linear-gradient(90deg,#0f4c81,#69a6d1);color:#fff;padding:28px 20px}
+    .container{max-width:1100px;margin:24px auto;padding:0 16px}
+    h1{font-size:28px;margin-bottom:8px}
+    p.lead{opacity:0.95}
+
+    /* --- Controls --- */
+    .controls{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+    .controls input[type="search"],.controls select{padding:10px;border-radius:8px;border:1px solid #d6d6e0;background:#fff;min-width:180px}
+    .controls label{display:flex;align-items:center;gap:8px}
+
+    /* --- Grid of cards --- */
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+    .card{background:#fff;border-radius:12px;box-shadow:0 6px 20px rgba(14,24,46,0.06);overflow:hidden;display:flex;flex-direction:column}
+    .card img{width:100%;height:180px;object-fit:cover;display:block}
+    .card .card-body{padding:14px;flex:1;display:flex;flex-direction:column}
+    .card h3{font-size:18px;margin-bottom:6px}
+    .meta{font-size:13px;color:#555;margin-bottom:8px}
+    .badge{display:inline-block;padding:6px 8px;border-radius:999px;font-size:12px;background:#eef3ff;color:#0b4b8a;margin-right:6px}
+    .card .btn-row{margin-top:auto;display:flex;gap:8px}
+    .btn{padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+    .btn-primary{background:#0f4c81;color:#fff}
+    .btn-outline{background:transparent;border:1px solid #d6d6e0}
+
+    /* --- Place details panel (modal) --- */
+    .modal{position:fixed;inset:0;background:rgba(7,12,20,0.6);display:flex;align-items:center;justify-content:center;padding:20px;z-index:999;opacity:0;pointer-events:none;transition:opacity .18s}
+    .modal.open{opacity:1;pointer-events:auto}
+    .modal-content{background:#fff;border-radius:12px;max-width:920px;width:100%;max-height:90vh;overflow:auto}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #eee}
+    .modal-body{display:grid;grid-template-columns:1fr 380px;gap:12px;padding:14px}
+    .modal-body img{width:100%;height:260px;object-fit:cover;border-radius:8px}
+    .info p{margin:8px 0}
+    .map{border-radius:8px;overflow:hidden}
+    .close{background:transparent;border:none;font-size:20px;cursor:pointer}
+
+    /* --- Lightbox --- */
+    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:1000;visibility:hidden;opacity:0;transition:opacity .15s}
+    .lightbox.open{visibility:visible;opacity:1}
+    .lightbox img{max-width:95%;max-height:90%}
+
+    /* --- Footer --- */
+    footer{padding:14px 0;text-align:center;color:#777;font-size:14px;margin-top:28px}
+
+    /* --- Responsive adjustments --- */
+    @media (max-width:920px){
+      .modal-body{grid-template-columns:1fr}
+      .modal-body img{height:200px}
+    }
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Heritage of West Bengal</h1>
+      <p class="lead">A curated guide to key heritage places across West Bengal — location, entry fee, pictures and how to reach.</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="controls">
+      <input id="search" type="search" placeholder="Search places e.g. Victoria, Murshidabad..." />
+      <select id="districtFilter">
+        <option value="all">All districts</option>
+        <option value="Kolkata">Kolkata</option>
+        <option value="Howrah">Howrah</option>
+        <option value="Murshidabad">Murshidabad</option>
+        <option value="Bankura">Bankura</option>
+        <option value="Hooghly">Hooghly</option>
+        <option value="Nadia">Nadia</option>
+        <option value="South 24 Parganas">South 24 Parganas</option>
+      </select>
+
+      <label>
+        <input type="checkbox" id="freeOnly"> Free entry only
+      </label>
+
+      <select id="sortBy">
+        <option value="name">Sort: Name</option>
+        <option value="fee">Sort: Entry Fee (low→high)</option>
+      </select>
+
+    </div>
+
+    <section id="grid" class="grid"></section>
+
+    <footer>Made with ❤️ — Replace sample data & images with your own for a final site.</footer>
+  </main>
+
+  <!-- Modal / Details -->
+  <div id="modal" class="modal" role="dialog" aria-hidden="true">
+    <div class="modal-content" role="document">
+      <div class="modal-header">
+        <strong id="modalTitle">Place name</strong>
+        <button class="close" id="modalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <img id="modalImage" src="" alt="Place image" />
+          <div class="info" style="padding:8px 0">
+            <p id="modalDesc"></p>
+            <p><strong>Location:</strong> <span id="modalLocation"></span></p>
+            <p><strong>Entry Fee:</strong> <span id="modalFee"></span></p>
+            <p><strong>Transport:</strong> <span id="modalTransport"></span></p>
+          </div>
+        </div>
+        <aside>
+          <div class="map" style="height:320px;">
+            <iframe id="modalMap" src="" width="100%" height="100%" style="border:0;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="btn btn-primary" id="openMaps">Open in Google Maps</button>
+            <button class="btn btn-outline" id="viewImages">View image</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" aria-hidden="true"><img id="lightboxImg" src="" alt="" /></div>
+
+  <script>
+  // --- Sample data ---
+  const heritagePlaces = [
+    {
+      id:1,
+      name: "Victoria Memorial",
+      district: "Kolkata",
+      location: "Maidan, Kolkata",
+      lat: 22.5448,
+      lng: 88.3426,
+      entryFee: "₹30 (Indian), ₹500 (Foreign)",
+      feeNumeric:30,
+      image: "https://upload.wikimedia.org/wikipedia/commons/3/38/Victoria_Memorial%2C_Kolkata.jpg",
+      transport: "Metro (Esplanade), Bus, Taxi, Tram",
+      description: "Large marble monument built between 1906–1921 dedicated to Queen Victoria. Contains a museum with colonial-era artifacts."
+    },
+    {
+      id:2,
+      name: "Dakshineswar Kali Temple",
+      district: "Howrah",
+      location: "Dakshineswar, Kolkata",
+      lat: 22.6544,
+      lng: 88.3632,
+      entryFee: "Free (donations welcome)",
+      feeNumeric:0,
+      image: "https://upload.wikimedia.org/wikipedia/commons/9/93/Dakshineswar_Kali_Temple.jpg",
+      transport: "Local trains to Bally/Ghusuri, buses, taxis, ferry across Hooghly",
+      description: "19th-century Hindu temple dedicated to Goddess Kali, famous for association with Ramakrishna Paramahansa."
+    },
+    {
+      id:3,
+      name: "Hazarduari Palace",
+      district: "Murshidabad",
+      location: "Murshidabad",
+      lat: 24.1844,
+      lng: 88.2679,
+      entryFee: "₹25 (Indian), ₹300 (Foreign)",
+      feeNumeric:25,
+      image: "https://upload.wikimedia.org/wikipedia/commons/6/67/Hazarduari_Palace%2C_Murshidabad%2C_West_Bengal.jpg",
+      transport: "Nearest railway station: Berhampore Court; road from Kolkata ~200 km",
+      description: "19th-century palace known as the 'Palace of a Thousand Doors' (Hazarduari). Houses a museum and collection of artifacts."
+    },
+    {
+      id:4,
+      name: "Bishnupur Terracotta Temples",
+      district: "Bankura",
+      location: "Bishnupur, Bankura",
+      lat: 23.0310,
+      lng: 87.3091,
+      entryFee: "Small local fee for some temples (₹10–50)",
+      feeNumeric:10,
+      image: "https://upload.wikimedia.org/wikipedia/commons/9/99/Radha_Rani_temple_Bishnupur.jpg",
+      transport: "Train to Bishnupur, buses from Bankura, taxis",
+      description: "Famous for terracotta temples built by the Malla kings (17th–18th centuries); notable for intricate terracotta panels."
+    },
+    {
+      id:5,
+      name: "Howrah Bridge (Rabindra Setu)",
+      district: "Howrah",
+      location: "Howrah–Kolkata across the Hooghly River",
+      lat: 22.5840,
+      lng: 88.3294,
+      entryFee: "Free",
+      feeNumeric:0,
+      image: "https://upload.wikimedia.org/wikipedia/commons/9/9a/HowrahBridge00.jpg",
+      transport: "Road (cars, buses, taxis), nearby Howrah Station",
+      description: "Iconic cantilever bridge connecting Howrah and Kolkata; a symbol of the city and engineering landmark."
+    },
+    {
+      id:6,
+      name: "Sundarbans National Park (heritage area)",
+      district: "South 24 Parganas",
+      location: "Sundarbans, delta of Ganges",
+      lat: 21.9497,
+      lng: 88.8764,
+      entryFee: "Protected area permits and boat fees apply",
+      feeNumeric:150,
+      image: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Sundarbans_Sunrise.jpg",
+      transport: "Boat tours from Godkhali/Hasnabad; nearest railhead Canning/Namkhana",
+      description: "Largest mangrove forest in the world, UNESCO World Heritage Site, home to the Royal Bengal Tiger."
+    },
+    {
+      id:7,
+      name: "Jorasanko Thakur Bari",
+      district: "Kolkata",
+      location: "Jorasanko, North Kolkata",
+      lat: 22.5726,
+      lng: 88.3611,
+      entryFee: "Museum fee small (₹10–20)",
+      feeNumeric:10,
+      image: "https://upload.wikimedia.org/wikipedia/commons/3/39/Jorasanko_Thakur_Bari.jpg",
+      transport: "Tram, bus, metro (Shyambazar/Behal) and taxis",
+      description: "Ancestral home of Rabindranath Tagore; now a museum preserving family memorabilia and Bengali renaissance history."
+    },
+    {
+      id:8,
+      name: "Belur Math",
+      district: "Hooghly",
+      location: "Belur, Howrah",
+      lat: 22.6245,
+      lng: 88.3508,
+      entryFee: "Free (donations welcome)",
+      feeNumeric:0,
+      image: "https://upload.wikimedia.org/wikipedia/commons/0/0d/Belur_Math.jpg",
+      transport: "Ferry across Hooghly, trains to Belur/Howrah, local buses",
+      description: "Headquarters of the Ramakrishna Math and Mission, notable for syncretic architecture and serene riverside setting."
+    }
+  ];
+
+  // --- DOM helpers ---
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+  // --- Render grid ---
+  function renderGrid(data){
+    const grid = $('#grid');
+    grid.innerHTML = '';
+    if(!data.length){ grid.innerHTML = '<p style="grid-column:1/-1;padding:18px;background:#fff;border-radius:8px">No places found</p>'; return }
+    data.forEach(place=>{
+      const card = document.createElement('article'); card.className='card';
+      card.innerHTML = `
+        <img loading="lazy" src="${place.image}" alt="${place.name}" />
+        <div class="card-body">
+          <h3>${place.name}</h3>
+          <div class="meta"><span class="badge">${place.district}</span><span class="badge">${place.location}</span></div>
+          <p style="flex:1;color:#444;font-size:14px;margin-bottom:8px">${place.description.substring(0,120)}...</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" data-id="${place.id}">View details</button>
+            <button class="btn btn-outline" data-open-image="${place.image}">Image</button>
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  // --- Filtering / Search ---
+  function applyFilters(){
+    const q = $('#search').value.trim().toLowerCase();
+    const district = $('#districtFilter').value;
+    const freeOnly = $('#freeOnly').checked;
+    const sortBy = $('#sortBy').value;
+
+    let results = heritagePlaces.filter(p=>{
+      if(district !== 'all' && p.district !== district) return false;
+      if(freeOnly && p.feeNumeric>0) return false;
+      if(q){
+        const hay = (p.name+' '+p.location+' '+p.description+' '+p.district).toLowerCase();
+        return hay.includes(q);
+      }
+      return true;
+    });
+
+    if(sortBy === 'fee') results.sort((a,b)=> (a.feeNumeric||0)-(b.feeNumeric||0));
+    else results.sort((a,b)=> a.name.localeCompare(b.name));
+
+    renderGrid(results);
+  }
+
+  // --- Modal interactions ---
+  function openModal(place){
+    $('#modalTitle').textContent = place.name;
+    $('#modalImage').src = place.image;
+    $('#modalDesc').textContent = place.description;
+    $('#modalLocation').textContent = place.location + ' (' + place.district + ')';
+    $('#modalFee').textContent = place.entryFee;
+    $('#modalTransport').textContent = place.transport;
+    const mapUrl = `https://www.google.com/maps?q=${place.lat},${place.lng}&output=embed`;
+    $('#modalMap').src = mapUrl;
+    $('#openMaps').onclick = ()=> window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name+' '+place.location)}`, '_blank');
+    $('#viewImages').onclick = ()=> openLightbox(place.image);
+    $('#modal').classList.add('open');
+    $('#modal').setAttribute('aria-hidden','false');
+  }
+  function closeModal(){
+    $('#modal').classList.remove('open');
+    $('#modal').setAttribute('aria-hidden','true');
+    $('#modalMap').src = '';
+  }
+
+  // --- Lightbox ---
+  function openLightbox(src){
+    $('#lightboxImg').src = src;
+    $('#lightbox').classList.add('open');
+    $('#lightbox').setAttribute('aria-hidden','false');
+  }
+  function closeLightbox(){
+    $('#lightbox').classList.remove('open');
+    $('#lightbox').setAttribute('aria-hidden','true');
+  }
+
+  // --- Event wiring ---
+  document.addEventListener('click', (e)=>{
+    // card view details
+    const id = e.target.dataset.id; if(id){ const place = heritagePlaces.find(p=>p.id==id); if(place) openModal(place); }
+    const imgSrc = e.target.dataset.openImage; if(imgSrc) openLightbox(imgSrc);
+  });
+
+  $('#modalClose').addEventListener('click', closeModal);
+  $('#modal').addEventListener('click', (e)=>{ if(e.target===e.currentTarget) closeModal(); });
+  $('#lightbox').addEventListener('click', closeLightbox);
+
+  // Controls
+  $('#search').addEventListener('input', applyFilters);
+  $('#districtFilter').addEventListener('change', applyFilters);
+  $('#freeOnly').addEventListener('change', applyFilters);
+  $('#sortBy').addEventListener('change', applyFilters);
+
+  // Initial render
+  renderGrid(heritagePlaces.slice().sort((a,b)=>a.name.localeCompare(b.name)));
+
+  // --- Utility: allow keyboard escape to close ---
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ closeModal(); closeLightbox(); } });
+
+  // --- Mobile friendly: reduce image sizes for bandwidth-constrained users ---
+  // (placeholder — replace with srcset in production for better performance)
+  </script>
+</body>
+</html>
